@@ -239,14 +239,14 @@ class Board extends React.Component {
 
 function Square(props){
   return (
-      <button className="square" onClick={props.onClick} >
+      <button className="square btn " onClick={props.onClick} >
       {props.value}
        </button>
   );
 }
 function Squarevalues(props){
   return(
-    <button className="square-filled" onClick={props.onClick} >
+    <button className="square-filled btn" onClick={props.onClick} >
     {props.value}
      </button>
   );
@@ -254,7 +254,7 @@ function Squarevalues(props){
 
 function Squarescored(props){
   return(
-    <button className="square-scored" onClick={props.onClick} >
+    <button className="square-scored btn"  onClick={props.onClick} >
     {props.value}
      </button>
   );
