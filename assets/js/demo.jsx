@@ -4,6 +4,7 @@ import { Button } from 'reactstrap';
 
 // Attribution : https://reactjs.org/tutorial/tutorial.html
 // Attribution : https://reactjs.org/docs/hello-world.html
+// Attribution : Nats memory starter code
 
 export default function run_demo(root) {
   ReactDOM.render(<Memory/>, root);
@@ -39,49 +40,85 @@ class Memory extends React.Component{
     const squaresScored = current.squaresScored.slice();
     var turnOfA = this.state.turnOfA;
     var flag = false;
-    var second = false;
+    var secondflag = false;
     if(squares[i] == null){
       clicks = clicks + 1;
       if(!turnOfA){
         squares[i] = squaresValue[i];
         turnOfA = !turnOfA;
+        secondflag = true;
+        this.setState({
+          history:history.concat([{
+              squares:squares,
+              squaresScored:squaresScored,
+          }]),
+          score : score,
+          turnOfA : turnOfA,
+          clicks: clicks
+        });
         
       }
       else{
-       squares[i] = squaresValue[i]; 
-        for(var j =0; j<16; j++){
-          if(j != i){
-            if(squares[j] === squares[i] & !squaresScored[j]){
-              flag = true;
-            // squares[j] ="done";
-            // squares[i] = "done";
-              squaresScored[i] = true;
-              squaresScored[j] = true;
-              score = score + 1;
-              turnOfA = !turnOfA;
-            }
-          }
-        }
-        if(!flag){
-          turnOfA = !turnOfA;
-          for(var m=0; m<16; m++){
-            if(!squaresScored[m]){
-              console.log("making null");
-              squares[m] = null;
-            }
+       squares[i] = squaresValue[i];
+       for(var j =0; j<16; j++){
+        if(j != i){
+          if(squares[j] === squares[i] & !squaresScored[j]){
+            flag = true;
+          // squares[j] ="done";
+          // squares[i] = "done";
+            squaresScored[i] = true;
+            squaresScored[j] = true;
+            score = score + 1;
+            turnOfA = !turnOfA;
           }
         }
       }
+       this.setState({
+        history:history.concat([{
+            squares:squares,
+            squaresScored:squaresScored,
+        }]),
+        score : score,
+        turnOfA : turnOfA,
+        clicks: clicks
+      }); 
+    
     }
+  }
+  else{
+    flag = true;
     this.setState({
       history:history.concat([{
           squares:squares,
           squaresScored:squaresScored,
-      }]),
+        }]),
       score : score,
       turnOfA : turnOfA,
       clicks: clicks
-    });
+    }); 
+  }
+    setTimeout(()=>{
+      if (!flag & !secondflag) {
+        turnOfA = !turnOfA;
+        for(var m=0; m<16; m++){
+          if(!squaresScored[m]){
+            console.log("making null");
+            squares[m] = null;
+          }
+        }
+        this.setState({
+          history:history.concat([{
+              squares:squares,
+              squaresScored:squaresScored,
+          }]),
+          score : score,
+          turnOfA : turnOfA,
+          clicks: clicks
+        }); 
+        
+      }
+    },500);
+   
       
   }
   sleep(milliseconds) {
