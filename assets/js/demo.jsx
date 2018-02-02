@@ -159,7 +159,7 @@ class Memory extends React.Component{
       </div>
       <div>
         <RestartFunc onClick = {() => this.restartFn()} />
-        <a className="btn btn-primary btn-lg github" href="https://github.com/rishab121/memory" target="\blank">
+        <a className="btn btn-primary btn-lg github" href="https://github.com/rishab121/memory" target="_blank">
           Github Link
         </a>
       </div>
