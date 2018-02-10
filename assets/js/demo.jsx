@@ -6,8 +6,8 @@ import { Button } from 'reactstrap';
 // Attribution : https://reactjs.org/docs/hello-world.html
 // Attribution : Nats memory starter code
 
-export default function run_demo(root) {
-  ReactDOM.render(<Memory/>, root);
+export default function run_demo(root,channel) {
+  ReactDOM.render(<Memory channel ={channel}/>, root);
 }
 
 
@@ -15,138 +15,67 @@ class Memory extends React.Component{
 
   constructor(props){
     super(props);
-   // const squaresValue = ['A','B','A','B','C','C','D','D','E','E','F','F','G','H','H','G'];
+    this.channel = props.channel;
+    this.channel.join()
+    .receive("ok", this.gotView.bind(this))
+    .receive("error", resp => { console.log("Unable to join", resp); });
     this.state = {
-      history: [{
-        squares: Array(16).fill(null),
-        squaresScored: Array(16).fill(false)
-
-      }],
+      squares: [],
+      squaresscored: [],
       score: 0,
-      turnOfA : false,
-      clicks : 0
+      turnofa: false,
+      clicks: 0,
     };
+    
+  }
+  gotView(view){
+    this.setState(view.game);
+    setTimeout(()=>{
+      var flag = view.game.flag;
+      var secondflag = view.game.secondflag;
+      if (!flag & !secondflag){
+        this.handleTimeOut(view.game);
+      }
+
+    },500); 
+
+  }
+  timeoutView(view){
+    //console.log("Timeout view");
+   // console.log(view.game);
+    this.setState(view.game);
+  }
+  handleClickByServer(i){
+    //console.log("yaha aaay");
+    this.channel.push("handleClickByServer",{num:i })
+        .receive("ok",this.gotView.bind(this))
+  }
+  handleTimeOut(game){
+    this.channel.push("handleTimeOut",{game: game})
+        .receive("ok",this.timeoutView.bind(this))
   }
 
   handleClick(i){
-    console.log(i);
-    console.log("button clicked");
-    const squaresValue = ['A','B','A','B','C','C','D','D','E','E','F','F','G','H','H','G'];
-    const history = this.state.history;
-    var score = this.state.score;
-    var clicks = this.state.clicks;
-    const current = history[history.length - 1];
-    const squares = current.squares.slice();
-    const squaresScored = current.squaresScored.slice();
-    var turnOfA = this.state.turnOfA;
-    var flag = false;
-    var secondflag = false;
-
-    if(squares[i] == null){
-      clicks = clicks + 1;
-      if(!turnOfA){
-        squares[i] = squaresValue[i];
-        turnOfA = !turnOfA;
-        secondflag = true;
-        this.setState({
-          history:history.concat([{
-              squares:squares,
-              squaresScored:squaresScored,
-          }]),
-          score : score,
-          turnOfA : turnOfA,
-          clicks: clicks
-        });
-        
-      }
-      else{
-       squares[i] = squaresValue[i];
-       for(var j =0; j<16; j++){
-        if(j != i){
-          if(squares[j] === squares[i] & !squaresScored[j]){
-            flag = true;
-          // squares[j] ="done";
-          // squares[i] = "done";
-            squaresScored[i] = true;
-            squaresScored[j] = true;
-            score = score + 1;
-            turnOfA = !turnOfA;
-          }
-        }
-      }
-       this.setState({
-        history:history.concat([{
-            squares:squares,
-            squaresScored:squaresScored,
-        }]),
-        score : score,
-        turnOfA : turnOfA,
-        clicks: clicks
-        }); 
-    
-      }
-    }
-    else{
-      flag = true;
-      this.setState({
-        history:history.concat([{
-            squares:squares,
-            squaresScored:squaresScored,
-          }]),
-        score : score,
-        turnOfA : turnOfA,
-        clicks: clicks
-      }); 
-    }
-    setTimeout(()=>{
-      if (!flag & !secondflag) {
-        turnOfA = !turnOfA;
-        for(var m=0; m<16; m++){
-          if(!squaresScored[m]){
-            console.log("making null");
-            squares[m] = null;
-          }
-        }
-        this.setState({
-          history:history.concat([{
-              squares:squares,
-              squaresScored:squaresScored,
-          }]),
-          score : score,
-          turnOfA : turnOfA,
-          clicks: clicks
-        }); 
-        
-      }
-    },500);    
+    //console.log("clicked")
+     this.handleClickByServer(i); 
   }
+  
   restartFn(){
-    const score =0;
-    const turnOfA = false;
-    const clicks = 0;
-    const history = [{
-      squares: Array(16).fill(null),
-      squaresScored: Array(16).fill(false)
-
-    }];
-    this.setState({
-      history: history,
-      score : score,
-      turnOfA : turnOfA,
-      clicks: clicks
-    });
+    this.channel.push("restartFn",{})
+    .receive("ok",this.timeoutView.bind(this))
   }
   render() {
-    const history = this.state.history;
+    //const history = this.state.history;
+   // console.log(this.state)
     const score = this.state.score;
-    const current = history[history.length - 1];
+    const current = this.state;
     return (
     <div>
       <div className="game">
         <div className="game-board">
           <Board 
              squares= {current.squares}
-             squaresScored = {current.squaresScored}
+             squaresscored = {current.squaresscored}
              onClick = {(i) => this.handleClick(i)}
          />
         </div>
@@ -173,7 +102,7 @@ class Memory extends React.Component{
 class Board extends React.Component {
   renderSquare(i) {
     const value = this.props.squares[i];
-    const scored = this.props.squaresScored[i];
+    const scored = this.props.squaresscored[i];
     if (value == null){
       return ( 
         <Square 

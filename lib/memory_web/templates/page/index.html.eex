@@ -1,8 +1,8 @@
-<h1>Memory Game</h1>
+<h1>Join A Game</h1>
+<a href="/games/demo"> Go to Memory</a>
 
-<div id="game">
-  Loading...
-</div>
+
+
 
 
 
